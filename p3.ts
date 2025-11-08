@@ -20,7 +20,7 @@ function initiateClockServer() {
             const response = JSON.parse(data.toString("utf-8"));
             
             if (response.id == "client") {
-                await sleep(2000); // 3 second delay before processing received message
+                await sleep(2000);
                 const client = new Client();
                 const client_number = response.this_client;
                 
@@ -36,10 +36,8 @@ function initiateClockServer() {
                             if (!dict.has(temp_perm)) {
                                 insertionOrder.push(temp_perm);
                             }
-                            // Got both replies, send INSERT to other clients
                             await client.Lamport.LAMPORT_INSERT(this_client, (this_client % 3) + 1, temp_perm, temp_grade);
                             await client.Lamport.LAMPORT_INSERT(this_client, ((this_client + 1) % 3) + 1, temp_perm, temp_grade);
-                            // Insert locally
                             dict.set(temp_perm, temp_grade);
                             lamport_reply_counter = 0;
                         }
@@ -91,12 +89,13 @@ function initiateClockServer() {
                         break;
                         
                     case(MasterRequestEnum.DICTIONARY_REQUEST):
-                        // Build ordered object
-                        const orderedDict: any = {};
+                        const pairs: string[] = [];
                         for (const key of insertionOrder) {
-                            orderedDict[String(key)] = dict.get(key);
+                            const value = dict.get(key);
+                            pairs.push(`"${key}": "${value}"`);
                         }
-                        await client.Master.DICTIONARY_SUCCESS(this_client, orderedDict, response.commandId);
+                        const dictString = `{${pairs.join(', ')}}`;
+                        await client.Master.DICTIONARY_SUCCESS(this_client, dictString, response.commandId);
                         break;
                 }
             }

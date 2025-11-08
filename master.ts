@@ -6,7 +6,6 @@ function writeRow(text: string) {
     fs.appendFileSync('output.txt', `${text}\n`);
 }
 
-// Store pending promises for responses
 const pendingResponses = new Map<string, { resolve: () => void, reject: (err: any) => void }>();
 
 function waitForResponse(key: string): Promise<void> {
@@ -40,7 +39,7 @@ async function main(){
             
             switch(response.action){
                 case(ClientRequestEnum.DICTIONARY_SUCCESS):
-                    writeRow(JSON.stringify(response.dict));
+                    writeRow(response.dict);
                     resolveResponse(`dictionary-${response.commandId}`);
                     break;
                 case(ClientRequestEnum.INSERT_SUCCESS):
