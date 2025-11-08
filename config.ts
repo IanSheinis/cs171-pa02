@@ -2,7 +2,7 @@ import * as net from "net";
 export let port_p1 = 3100;
 export let port_p2 = 3101;
 export let port_p3 = 3102;
-export let port_master = 3103; // Todo make all of these configurable via makefile 
+export let port_master = 3103;
 
 const args = process.argv.slice(2); // Skip node and script name
 for (let i = 0; i < args.length; i += 2) {
@@ -28,6 +28,7 @@ for (let i = 0; i < args.length; i += 2) {
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 export enum MasterRequestEnum {
     INSERT_REQUEST,
     LOOKUP_REQUEST,
@@ -86,28 +87,31 @@ async function sendRequest(obj: any, port: number): Promise<void> {
 export class Master {
     private id = "master"
     constructor() {}
-    public async INSERT_REQUEST(client: number, perm: number, grade: string){
+    public async INSERT_REQUEST(client: number, perm: number, grade: string, commandId: number){
         let port = findPort(client);
         await sendRequest({
             id: this.id,
             action: MasterRequestEnum.INSERT_REQUEST,
             perm,
-            grade
+            grade,
+            commandId
         }, port)
     }
-    public async LOOKUP_REQUEST(client: number, perm: number){
+    public async LOOKUP_REQUEST(client: number, perm: number, commandId: number){
         let port = findPort(client);
         await sendRequest({
             id: this.id,
             action: MasterRequestEnum.LOOKUP_REQUEST,
-            perm
+            perm,
+            commandId
         }, port)
     }
-    public async DICTIONARY_REQUEST(client: number){
+    public async DICTIONARY_REQUEST(client: number, commandId: number){
         let port = findPort(client);
         await sendRequest({
             id: this.id,
-            action: MasterRequestEnum.DICTIONARY_REQUEST
+            action: MasterRequestEnum.DICTIONARY_REQUEST,
+            commandId
         }, port)
     }
 }
@@ -117,35 +121,38 @@ class Client_Master {
     constructor(id: string) {
         this.id = id
     }
-    public async INSERT_SUCCESS(this_client: number, perm: number, grade: string){
+    public async INSERT_SUCCESS(this_client: number, perm: number, grade: string, commandId: number){
         await sendRequest(
             {
                 id: this.id,
                 action: ClientRequestEnum.INSERT_SUCCESS,
                 perm,
                 grade,
-                this_client
+                this_client,
+                commandId
             }, port_master
         )
     }
-    public async LOOKUP_SUCCESS(this_client: number, perm: number, grade: string){
+    public async LOOKUP_SUCCESS(this_client: number, perm: number, grade: string, commandId: number){
         await sendRequest(
             {
                 id: this.id,
                 action: ClientRequestEnum.LOOKUP_SUCCESS,
                 perm,
                 grade,
-                this_client
+                this_client,
+                commandId
             }, port_master
         )
     }
-    public async DICTIONARY_SUCCESS(this_client: number, dict: Map<number,string>){
+    public async DICTIONARY_SUCCESS(this_client: number, dict: Map<number,string>, commandId: number){
         await sendRequest(
             {
                 id: this.id,
                 action: ClientRequestEnum.DICTIONARY_SUCCESS,
                 dict: Object.fromEntries(dict),
-                this_client
+                this_client,
+                commandId
             }, port_master
         )
     }
@@ -210,6 +217,7 @@ class Client_Lamport {
         )
     }
 }
+
 export class Client {
     private id = "client";
     public readonly Master: Client_Master;
