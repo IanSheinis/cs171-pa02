@@ -19,7 +19,7 @@ function initiateClockServer() {
             const response = JSON.parse(data.toString("utf-8"));
             
             if (response.id == "client") {
-                await sleep(3000); // 3 second delay before processing received message
+                await sleep(2000); // 3 second delay before processing received message
                 const client = new Client();
                 const client_number = response.this_client;
                 
