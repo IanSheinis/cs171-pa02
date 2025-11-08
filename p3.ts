@@ -1,9 +1,10 @@
 import * as net from "net";
-import { Client, ClientRequestEnum, MasterRequestEnum, port_p3, sleep } from "./config";
+import { Client, ClientRequestEnum, MasterRequestEnum, port_p1, port_p3, sleep } from "./config";
 
 const this_client = 3;
 let local_clock = 0;
 const dict = new Map<number,string>();
+const insertionOrder: number[] = [];
 let temp_perm: number = -1;
 let temp_grade: string = "NAN";
 let lamport_success_counter = 0;
@@ -32,6 +33,9 @@ function initiateClockServer() {
                     case(ClientRequestEnum.LAMPORT_REPLY):
                         lamport_reply_counter++;
                         if (lamport_reply_counter == 2) {
+                            if (!dict.has(temp_perm)) {
+                                insertionOrder.push(temp_perm);
+                            }
                             // Got both replies, send INSERT to other clients
                             await client.Lamport.LAMPORT_INSERT(this_client, (this_client % 3) + 1, temp_perm, temp_grade);
                             await client.Lamport.LAMPORT_INSERT(this_client, ((this_client + 1) % 3) + 1, temp_perm, temp_grade);
@@ -42,6 +46,9 @@ function initiateClockServer() {
                         break;
                         
                     case(ClientRequestEnum.LAMPORT_INSERT):
+                        if (!dict.has(response.perm)) {
+                            insertionOrder.push(response.perm);
+                        }
                         dict.set(response.perm, response.grade);
                         await client.Lamport.LAMPORT_SUCCESS(this_client, client_number);
                         break;
@@ -84,7 +91,12 @@ function initiateClockServer() {
                         break;
                         
                     case(MasterRequestEnum.DICTIONARY_REQUEST):
-                        await client.Master.DICTIONARY_SUCCESS(this_client, dict, response.commandId);
+                        // Build ordered object
+                        const orderedDict: any = {};
+                        for (const key of insertionOrder) {
+                            orderedDict[String(key)] = dict.get(key);
+                        }
+                        await client.Master.DICTIONARY_SUCCESS(this_client, orderedDict, response.commandId);
                         break;
                 }
             }

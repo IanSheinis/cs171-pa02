@@ -29,10 +29,18 @@ run_clients: setup clean
 	sleep 2; \
 	npx ts-node master.ts -port1 $(PORT1) -port2 $(PORT2) -port3 $(PORT3) -port $(PORT)
 
-# Stop all running processes
+# Was having issues killing all processes, bit overkill
 stop:
 	@echo "Killing processes..."
-	@pkill -f "ts-node" || true
+	@pkill -9 -f "ts-node.*p1.ts" 2>/dev/null || true
+	@pkill -9 -f "ts-node.*p2.ts" 2>/dev/null || true
+	@pkill -9 -f "ts-node.*p3.ts" 2>/dev/null || true
+	@pkill -9 -f "ts-node.*master.ts" 2>/dev/null || true
+	@pkill -9 -f "node.*p1.js" 2>/dev/null || true
+	@pkill -9 -f "node.*p2.js" 2>/dev/null || true
+	@pkill -9 -f "node.*p3.js" 2>/dev/null || true
+	@pkill -9 -f "node.*master.js" 2>/dev/null || true
+	@sleep 1
 	@echo "All processes stopped."
 
 # Clean output files

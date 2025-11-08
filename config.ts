@@ -89,6 +89,7 @@ export class Master {
     constructor() {}
     public async INSERT_REQUEST(client: number, perm: number, grade: string, commandId: number){
         let port = findPort(client);
+        console.log(`[MASTER → C${client}] INSERT_REQUEST(perm=${perm}, grade=${grade}, commandId=${commandId})`);
         await sendRequest({
             id: this.id,
             action: MasterRequestEnum.INSERT_REQUEST,
@@ -99,6 +100,7 @@ export class Master {
     }
     public async LOOKUP_REQUEST(client: number, perm: number, commandId: number){
         let port = findPort(client);
+        console.log(`[MASTER → C${client}] LOOKUP_REQUEST(perm=${perm}, commandId=${commandId})`);
         await sendRequest({
             id: this.id,
             action: MasterRequestEnum.LOOKUP_REQUEST,
@@ -108,6 +110,7 @@ export class Master {
     }
     public async DICTIONARY_REQUEST(client: number, commandId: number){
         let port = findPort(client);
+        console.log(`[MASTER → C${client}] DICTIONARY_REQUEST(commandId=${commandId})`);
         await sendRequest({
             id: this.id,
             action: MasterRequestEnum.DICTIONARY_REQUEST,
@@ -122,6 +125,7 @@ class Client_Master {
         this.id = id
     }
     public async INSERT_SUCCESS(this_client: number, perm: number, grade: string, commandId: number){
+        console.log(`[C${this_client} → MASTER] INSERT_SUCCESS(perm=${perm}, grade=${grade}, commandId=${commandId})`);
         await sendRequest(
             {
                 id: this.id,
@@ -134,6 +138,7 @@ class Client_Master {
         )
     }
     public async LOOKUP_SUCCESS(this_client: number, perm: number, grade: string, commandId: number){
+        console.log(`[C${this_client} → MASTER] LOOKUP_SUCCESS(perm=${perm}, grade=${grade}, commandId=${commandId})`);
         await sendRequest(
             {
                 id: this.id,
@@ -145,12 +150,13 @@ class Client_Master {
             }, port_master
         )
     }
-    public async DICTIONARY_SUCCESS(this_client: number, dict: Map<number,string>, commandId: number){
+    public async DICTIONARY_SUCCESS(this_client: number, dict: any, commandId: number){
+        console.log(`[C${this_client} → MASTER] DICTIONARY_SUCCESS(dict=${JSON.stringify(dict)}, commandId=${commandId})`);
         await sendRequest(
             {
                 id: this.id,
                 action: ClientRequestEnum.DICTIONARY_SUCCESS,
-                dict: Object.fromEntries(dict),
+                dict: dict,  
                 this_client,
                 commandId
             }, port_master
@@ -165,6 +171,7 @@ class Client_Lamport {
     }
     public async LAMPORT_REQUEST(this_client: number, client: number, timestamp: number){
         let port = findPort(client);
+        console.log(`[C${this_client} → C${client}] LAMPORT_REQUEST(timestamp=${timestamp})`);
         await sendRequest(
             {
                 id: this.id,
@@ -176,6 +183,7 @@ class Client_Lamport {
     }
     public async LAMPORT_REPLY(this_client: number, client: number){
         let port = findPort(client);
+        console.log(`[C${this_client} → C${client}] LAMPORT_REPLY`);
         await sendRequest(
             {
                 id: this.id,
@@ -186,6 +194,7 @@ class Client_Lamport {
     }
     public async LAMPORT_INSERT(this_client: number, client: number, perm: number, grade: string){
         let port = findPort(client);
+        console.log(`[C${this_client} → C${client}] LAMPORT_INSERT(perm=${perm}, grade=${grade})`);
         await sendRequest(
             {
                 id: this.id,
@@ -198,6 +207,7 @@ class Client_Lamport {
     }
     public async LAMPORT_SUCCESS(this_client: number, client: number){
         let port = findPort(client);
+        console.log(`[C${this_client} → C${client}] LAMPORT_SUCCESS`);
         await sendRequest(
             {
                 id: this.id,
@@ -208,6 +218,7 @@ class Client_Lamport {
     }
     public async LAMPORT_RELEASE(this_client: number, client: number){
         let port = findPort(client);
+        console.log(`[C${this_client} → C${client}] LAMPORT_RELEASE`);
         await sendRequest(
             {
                 id: this.id,
