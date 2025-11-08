@@ -1,4 +1,3 @@
-# Claude generated makefiles
 # Note that for autograder reasons,
 # the following variable must
 # be spelled exactly PORT!
@@ -9,11 +8,11 @@ PORT ?= 8004
 
 .PHONY: compile run_clients stop clean
 
-# Empty compile target (ts-node doesn't need compilation)
+# Empty compile target
 compile:
 
 # Run all clients and master sequentially
-run_clients: stop clean
+run_clients: clean
 	@echo "Starting clients and master..."
 	ts-node p1.ts -port1 $(PORT1) -port2 $(PORT2) -port3 $(PORT3) -port $(PORT) & \
 	sleep 1; \
@@ -35,5 +34,5 @@ stop:
 # Clean output files
 clean:
 	@echo "Cleaning up..."
-	rm -f output.txt
+	@rm -f output.txt
 	@echo "Cleanup complete."
